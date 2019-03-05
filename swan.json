@@ -1,0 +1,12 @@
+{
+  "mail_superviseur_Rennes" : "anne.guede@orange.com;elisabeth.sicot@orange.com",
+  "mail_superviseur_Lannion" : "baudouin.wiplier@orange.com;christophe.levionnois@orange.com",
+  "mail_KLIF" : "joel.idier@orange.com;romuald.richet@orange.com;pboubarne.ext@orange.com",
+  "mail_EUROINFO" : "patrick.brechet@orange.com;jmarguerie.ext@orange.com;louis.klein@orange.com",
+  "acteur_ODAGONNEAU": "'OWID7386'",
+  "acteur_PBRECHET" : "'NWKX8781'",
+  "acteur_JIDIER" : "'JYCI6446'",
+  "acteur_RRICHET" : "'IRRI7420'",
+  "choix_1":{"commentaires" : "OD ","acteur_choix_1":"'OWID7386'"}
+
+}
