@@ -88,9 +88,13 @@ class interface_IHM(object):
                                        " mail  demanderessources CP Rennes",
                                        " Qualif_RIE",
                                        " mail demande ressources CP Lannion",
-                                       " activation + validation + RDV LA POSTE", " activation + validation",
-                                       " validation + RDV EUROINFO", " Creation RDV", " Envoi_mail",
-                                       " Activation NFIT", " Debug fonction"))
+                                       " activation + validation + RDV LA POSTE",
+                                       " activation + validation",
+                                       " validation + RDV EUROINFO",
+                                       " Creation RDV",
+                                       " Envoi_mail",
+                                       " Activation NFIT",
+                                       " Debug fonction"))
         self.liste = Listbox(fr_d, listvariable=liste_action, selectmode="single", selectbackground="ORANGE",
                              height=10, width=38,activestyle="none")
         self.liste.grid(row=0, column=0, padx=5)
@@ -147,19 +151,70 @@ class interface_IHM(object):
 
     def action(self):
 
-        if self.liste.curselection()==() :
+        if self.liste.curselection()==() : # verification action sélectionnée
             showinfo("Alerte","veuillez choisir une action !!! ")
         else :
             self.choix = str(self.liste.get(self.liste.curselection()))
-            print(self.choix)
-            if self.choix == f' qualification -> commentaires : {self.data_dict["choix_1"]["commentaires"]}' :
-                pass
+            if self.liste.curselection()==(0,) :
+                print(self.choix)
+                self.choix_1()
+            elif self.liste.curselection()==(1,) :
+                print(self.choix)
+                self.choix_2()
+            elif self.liste.curselection()==(2,) :
+                print(self.choix)
+                self.choix_3()
+            elif self.liste.curselection()==(3,) :
+                print(self.choix)
+                self.choix_4()
+            elif self.liste.curselection()==(4,) :
+                print(self.choix)
+                self.choix_5()
+            elif self.liste.curselection()==(5,) :
+                print(self.choix)
+                self.choix_6()
+            elif self.liste.curselection()==(6,) :
+                print(self.choix)
+                self.choix_7()
+            elif self.liste.curselection()==(7,) :
+                print(self.choix)
+                self.choix_8()
+            elif self.liste.curselection()==(8,) :
+                print(self.choix)
+                self.choix_9()
+            elif self.liste.curselection()==(9,) :
+                print(self.choix)
+                self.choix_10()
+            elif self.liste.curselection()==(10,) :
+                print(self.choix)
+                self.choix_11()
+
 
 
     def choix_1(self):
         pass
     def choix_2(self):
         pass
+    def choix_3(self):
+        pass
+    def choix_4(self):
+        pass
+    def choix_5(self):
+        pass
+    def choix_6(self):
+        pass
+    def choix_7(self):
+        pass
+    def choix_8(self):
+        pass
+    def choix_9(self):
+        pass
+    def choix_10(self):
+        pass
+    def choix_11(self):
+        pass
+
+
     def CurSel(self,numswan):
         #numswan=self.entree.get()
         print (self.choix)
