@@ -1,3 +1,5 @@
+
+from module_perso.module_graphiques import progress_bar
 from tkinter import *
 from tkinter.messagebox import *
 import subprocess
@@ -6,67 +8,55 @@ from tkinter import filedialog
 import os
 
 
-class ComboBox(Toplevel):
-    "widget composite boite de liste"
-
-    def __init__(self, boss, items=["choix1","choix2"],id=1):
-        self.win=boss
-        self.eventid=f'<<fincombobox{id}>>'
-        self.liste = items
-        self.fen_choix = Toplevel(boss)
+class widget_ComboBox(Toplevel):
+    def __init__(self,win,listitem,id=1,title="titre",label="selectionner un choix"):
+        items = listitem
+        self.evenid=f'<<fincombox{id}>>'
+        self.win=win
+        self.fen_choix = Toplevel(win)
         self.fen_choix.title("choix tech")
         self.fen_choix.geometry("+600+250")
-        self.fen_choix.withdraw()
-        lab = Label(self.fen_choix, text="selectionnez le tech à affecter au swan")
+        #self.fen_choix.withdraw()
+        lab = Label(self.fen_choix, text=label)
         lab.pack(padx=5, pady=5)
-        self.liste_choix= Listbox(self.fen_choix, selectbackground="ORANGE", relief=RAISED,
-                                    activestyle="none", bd=7)
-        for index in range(len(self.liste)):
-            self.liste_choix.insert(index + 1, self.liste[index])
-        self.liste_choix.pack(fill=X, expand=YES, padx=5, pady=5)
-        Button(self.fen_choix, text="OK", command=self.action).pack(pady=5)
+        self.liste_items = Listbox(self.fen_choix, selectbackground="ORANGE", relief=RAISED,
+                                   activestyle="none", bd=7)
+        for index in range(len(items)):
+            self.liste_items.insert(index + 1, items[index])
+        self.liste_items.pack(fill=X, expand=YES, padx=5, pady=5)
+        Button(self.fen_choix, text="OK", command=self.action).pack()
 
-    def aff(self):
-        self.fen_choix.deiconify()
 
     def action(self):
-        print(self.liste_choix.get(self.liste_choix.curselection()))
-        self.resultat="resultats :" + self.liste_choix.get(self.liste_choix.curselection())
+        self.resultats=self.liste_items.get(self.liste_items.curselection())
         self.fen_choix.withdraw()
-        self.win.event_generate(self.eventid)
-
-
-
-
-
-
+        self.win.event_generate(self.evenid)
+    def fin(self):
+        self.fen_choix.destroy()
 
 
 
 class interface_IHM(object):
-    def __init__(self,action,repjson):
+    def __init__(self,action,repjson,titre="TITRE"):
 
         """construteur de la fenetre principal"""
 
         with open(action) as action_ihm:
             self.action_ihm_dict =json.load(action_ihm)
-        with open("json\\tech.json")  as mailstechs:
-            self.mailstechs_dict = json.load(mailstechs)
         self.rep_json = repjson
         self.liste_action_ihm =[action for action in self.action_ihm_dict.values()]
         self.root = Tk()
-        self.root.title("                            ROBOT SWAN INTERFACE      V2.0")
+        self.root.title(titre)
         self.root.geometry("+1+1")
         self.menu()
         self.traitement_lot = FALSE
-        #self.mailtech=""
+        self.mailtech=""
         self.makeWidgets()
         self.root.protocol("WM_DELETE_WINDOW", self.quitter)
         self.root.bind('<<thread_fini>>', self.nettoyagelog)
-        self.root.bind('<<fincombobox1>>',self.actioncombo1)
-        self.root.bind('<<fincombobox2>>', self.actioncombo2)
+        self.root.bind('<<fincombox1>>',self.action_widget_combolist1)
+        self.root.bind('<<fincombox2>>', self.action_widget_combolist2)
         self.root.mainloop()
-
 
     def makeWidgets(self):
 
@@ -169,13 +159,12 @@ class interface_IHM(object):
     def thread_traitement_lot(self):
         pass
     def ouvrir_modele_traitlot(self):
-        pass
         #subprocess.call(["C:\Program Files (x86)\Microsoft Office\Office14\EXCEL.EXE","C:\Applications\Robotswan\\trait_lot\modele_trait_lot_swan_1.xls"])
-
+        pass
     def action(self):
-        #print(self.liste.curselection()[0])
+        print(self.liste.curselection()[0])
 
-        # if self.liste.curselection()==() : # verification action sélectionnée
+        #if self.liste.curselection()==() : # verification action sélectionnée
         #     self.sv.set("veuillez choisir une action !!! ")
         # elif self.entree.get()=="" :
         #     self.sv.set("Veuiller saisir une réference !!!!")  # affichage msg erreur dans bandeau
@@ -186,19 +175,21 @@ class interface_IHM(object):
             # self.choix = str(self.liste.get(self.liste.curselection()))
             # self.sv.set(f"traitement en cours : {ref_saisie} -> {self.choix}")
         if self.liste.curselection()==(0,) :
-            self.p1=ComboBox(self.root,["choix1","choix2","choix3"])
-            self.p1.aff()
-        if self.liste.curselection()==(1,) :
-            self.p2=ComboBox(self.root,["choix4","choix5","choix6"],2)
-            self.p2.aff()
+            self.ref_saisie = self.entree.get()
+            self.choix = str(self.liste.get(self.liste.curselection()))
+            self.sv.set(f"traitement en cours : {self.ref_saisie} -> {self.choix}")
+            self.p = widget_ComboBox(self.root, ["test1","test2"],1)
+            #self.p.aff()
+        elif self.liste.curselection()==(1,) :
+            self.p2=widget_ComboBox(self.root,["test3","test4"],2)
 
-    def actioncombo1(self,e):
-        print(self.p1.resultat)
+    def action_widget_combolist1(self,e):
+        print(self.p.resultats,self.ref_saisie,self.choix)
+        self.p.fin()
+        print (self.ref_saisie,self.choix)
 
-    def actioncombo2(self, e):
-        print(self.p2.resultat)
-
-
+    def action_widget_combolist2(self,e):
+        print(self.p2.resultats)
 
     def quitter(self):
         #swan.quit()
@@ -206,4 +197,5 @@ class interface_IHM(object):
 
 
 if __name__ == "__main__":
-    app=interface_IHM("json\\menu_ihm.json","json")
+    app=interface_IHM("C:\Applications\Robotswan\json\\action_ihm.json","C:\Applications\Robotswan\json",50*" "+"ROBOT SWAN")
+
