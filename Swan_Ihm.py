@@ -1,11 +1,9 @@
-
 from module_perso.module_graphiques import progress_bar
-from module_perso.module_Ihm import interface_IHM
+from module_perso.module_Ihm import *
 import os, glob
 import json
 import pyperclip
 from module_perso.module_office import Outlook
-from datetime import datetime
 import arrow
 from time import sleep
 import threading
@@ -23,7 +21,6 @@ from selenium.webdriver.support import ui
 import logging
 from logging.handlers import RotatingFileHandler
 
-
 # création de l'objet logger qui va nous servir à écrire dans les logs
 log = logging.getLogger()
 # on met le niveau du logger à DEBUG, comme ça il écrit tout
@@ -35,7 +32,6 @@ formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
 # un fichier en mode 'append', avec 1 backup et une taille max de 1Mo
 file_handler_debug = RotatingFileHandler('debug.log', 'a', 1000000, 1, encoding="utf-8")
 file_handler_info = RotatingFileHandler('info.log', 'a', 1000000, 1, encoding="utf-8")
-
 # on lui met le niveau sur DEBUG, on lui dit qu'il doit utiliser le formateur
 # créé précédement et on ajoute ce handler au logger
 file_handler_debug.setLevel(logging.WARNING)
@@ -50,24 +46,24 @@ stream_handler = logging.StreamHandler()
 stream_handler.setLevel(logging.INFO)
 log.addHandler(stream_handler)
 
+
 def logger(texte="renseigner message", niveau="info"):
     if niveau == "info":
         log.info(texte)
     elif niveau == "debug":
         log.debug(texte)
 
-class Thread(threading.Thread):
 
+class Thread(threading.Thread):
     def __init__(self, win, choix_thread, numswan, mailtech):
         threading.Thread.__init__(self)
         self.ns = numswan
         self.choix = choix_thread
         self.win = win
         self.mailtech = mailtech
-        self.log=log
+        self.log = log
 
     def run(self):
-        # self.threadencours = TRUE
         import pythoncom
         pythoncom.CoInitialize()
         self.choix(self.ns, self.mailtech)
@@ -113,10 +109,9 @@ class swan_FF(webdriver.Firefox):
         self.set_page_load_timeout(10)
         self.ouvrir("http://swan.sso.infra.ftgroup/binswan/StartPage.aspx")
 
-
-    def log(self,log1,log2):
-        self.log=log1
-        self.log2=log2
+    def log(self, log1, log2):
+        self.log = log1
+        self.log2 = log2
 
     def get_firefox_profile(self):
         """
@@ -169,12 +164,12 @@ class swan_FF(webdriver.Firefox):
             WebDriverWait(self, 10).until(expected_conditions.element_to_be_clickable((By.XPATH, locator)))
             # sleep(1)
             self.find_element_by_xpath(locator).click()
-        except WebDriverException:
-            logger(str(WebDriverException), "debug")
+        except WebDriverException as e:
+            logger(str(e))
+            print("erreur selenium : ", e)
 
     def rech(self, num_swan):
         logger("recherche swan")
-
         self.find_element_by_id("operationSearchTextBox_Textbox_operationSearchTextBox").clear()
         self.find_element_by_id("operationSearchTextBox_Textbox_operationSearchTextBox").send_keys(num_swan)
         self.find_element_by_id("operationSearchButton").click()
@@ -194,7 +189,7 @@ class swan_FF(webdriver.Firefox):
                         (By.XPATH, "//*[@id='Title_MyBanner_lblTitrepart2']")))
                 self.recherche_swan = True
             except WebDriverException as e:
-                logger(str(e), "debug")
+                logger(str(e))
                 print("erreur selenium : ", e)
 
         # assert num_swan in element.text
@@ -210,11 +205,12 @@ class swan_FF(webdriver.Firefox):
         logger("Enregister quitter")
         try:
             self.wait_id("MainContent_btnSaveAndExit")
-            WebDriverWait(self, 10).until(expected_conditions.invisibility_of_element_located((By.ID, "disablingDiv")))
+            WebDriverWait(self, 10).until(
+                expected_conditions.visibility_of_element_located((By.ID, "MainContent_btnSaveAndExit")))
             self.find_element_by_id("MainContent_btnSaveAndExit").click()
             self.wait_id("MainContent_lblFavTitle")
         except WebDriverException as e:
-            logger(str(e), "debug")
+            logger(str(e))
             print("erreur selenium : ", e)
 
         # self.wait_id("MainContent_lblFavTitle")
@@ -299,7 +295,7 @@ class swan_FF(webdriver.Firefox):
         # sleep(1)
         WebDriverWait(self, 10).until(expected_conditions.invisibility_of_element_located((By.ID, "disablingDiv")))
 
-    def OT_bacara(self):
+    def ot_bacara(self):
         logger("recuperation OT bacara")
         # click menu description
         self.find_element_by_xpath("//*[@title='description']").click()
@@ -323,7 +319,7 @@ class swan_FF(webdriver.Firefox):
         self.commentaires_OTbacara(self.bacara)
         return self.bacara
 
-    def Activation_NFIT(self):
+    def activation_NFIT(self):
         logger("Activation NFIT")
         # clic onglet Actions
         self.find_element_by_xpath("//*[@title='actions']").click()
@@ -360,7 +356,7 @@ class swan_FF(webdriver.Firefox):
         self.click_by_XPATH("//*[@title='Créer ticket']")
         sleep(2)
 
-    def Reaffecter_EDS(self, EDS):
+    def reaffecter_EDS(self, EDS):
         logger("Réaffecter EDS")
         # clic onglet Actions
         self.find_element_by_xpath("//*[@title='actions']").click()
@@ -392,12 +388,10 @@ class swan_FF(webdriver.Firefox):
 
     def choix_1(self, numswan, tech):
         # qualification -> commentaires 'OD'
-
-
         self.btnmodif()
-        #self.log2.set("modif commentaire")
+        # self.log2.set("modif commentaire")
         self.commentaires(data_dict["choix_1"]["commentaires"])
-        #self.log2.set("modif acteur")
+        # self.log2.set("modif acteur")
         self.modif_acteur(data_dict["choix_1"]["acteur_choix_1"])
         self.btnenrquit()
 
@@ -422,20 +416,20 @@ class swan_FF(webdriver.Firefox):
         self.btnmodif()
         self.commentaires(data_dict["choix_1"]["commentaires"] + " " + self.date + " ressource CP Rennes OK")
         self.activation()
-        OT_bacara = self.OT_bacara()
+        OT_bacara = self.ot_bacara()
         self.changer_etat(self.etatvalide)
         info_swan = self.recup_info()
         self.btnenrquit()
         Outlook(tech, self.mail_KLIF, self.objet_mail(numswan, info_swan) + OT_bacara,
-            info_swan[3],
-            info_swan[1],info_swan[2]).rdv()
+                info_swan[3],
+                info_swan[1], info_swan[2]).rdv()
 
     def choix_5(self, numswan, tech):
         # activation + validation
         self.btnmodif()
         # activation
         self.activation()
-        self.OT_bacara()
+        self.ot_bacara()
         # validation
         self.changer_etat(self.etatvalide)
         self.btnenrquit()
@@ -448,23 +442,23 @@ class swan_FF(webdriver.Firefox):
         self.changer_etat(self.etatvalide)
         self.btnenrquit()
         Outlook(self.mail_EUROINFO, self.mail_KLIF, self.objet_mail(numswan, info_swan),
-            info_swan[3], info_swan[1], info_swan[2]).rdv()
+                info_swan[3], info_swan[1], info_swan[2]).rdv()
 
     def choix_7(self, numswan, tech):
         # Creation  RDV
         info_swan = self.recup_info()
         Outlook("", self.mail_KLIF, self.objet_mail(numswan, info_swan), info_swan[3],
-            info_swan[1], info_swan[2]).rdv()
+                info_swan[1], info_swan[2]).rdv()
 
     def choix_8(self, numswan, tech):
         # Cretion Email
         info_swan = self.recup_info()
-        Outlook("", su=self.objet_mail(numswan, info_swan), bd=info_swan[3])
+        Outlook("", su=self.objet_mail(numswan, info_swan), bd=info_swan[3]).mail()
 
     def choix_9(self, numswan, tech):
         # Activation NFIT
         self.btnmodif()
-        self.Activation_NFIT()
+        self.activation_NFIT()
         self.changer_etat(self.etatvalide)
         self.btnenrquit()
 
@@ -474,30 +468,30 @@ class swan_FF(webdriver.Firefox):
         self.commentaires("test mcs SITA")
         # self.modif_acteur(self.ODAGONNEAU)
         self.activation()
-        self.OT_bacara()
+        self.ot_bacara()
         info_swan = self.recup_info()
         self.changer_etat(self.etatvalide)
         self.btnenrquit()
         Outlook(data_dict["SITA"]["mail"], self.mail_KLIF,
-            "test MCS site WS-ARUN-TOWN1 / RUNDD / CD043B9FF4", data_dict["SITA"]["texte"],
-            info_swan[1], info_swan[2]).rdv()
+                "test MCS site WS-ARUN-TOWN1 / RUNDD / CD043B9FF4", data_dict["SITA"]["texte"],
+                info_swan[1], info_swan[2]).rdv()
 
     def debug(self, numswan, tech):
         # self.btnmodif()
         info_swan = self.recup_info()
-        OT_bacara = self.OT_bacara()
+        OT_bacara = self.ot_bacara()
         Outlook(tech, self.mail_KLIF, self.objet_mail(numswan, info_swan) + OT_bacara,
-            info_swan[3],info_swan[1], info_swan[2]).rdv()
+                info_swan[3], info_swan[1], info_swan[2]).rdv()
         # rdv(dest=data_dict["SITA"]["mail"], dest_op=self.mail_KLIF, sujet="test MCS site WS-ARUN-TOWN1 / RUNDD / CD043B9FF4", corps=data_dict["SITA"]["texte"], date_deb=info_swan[1], date_fin=info_swan[2])
-        # self.Reaffecter_EDS("ATQCHR")
+        # self.reaffecter_EDS("ATQCHR")
         # self.commentaires("OD")
         # self.changer_etat(self.etatvalide)
         # self.modif_acteur(data_dict["choix_1"]["acteur_choix_1"])
         # self.btnenrquit()
         # info_swan = self.recup_info()
-        # OT_bacara = self.OT_bacara()
-        #Outlook(tech, self.mail_KLIF, self.objet_mail(numswan, info_swan) + "OT_bacara", info_swan[3], info_swan[1],info_swan[2]).rdv()
-        #Outlook("", su=self.objet_mail(numswan, info_swan), bd=info_swan[3]).mail()
+        # ot_bacara = self.ot_bacara()
+        # Outlook(tech, self.mail_KLIF, self.objet_mail(numswan, info_swan) + "ot_bacara", info_swan[3], info_swan[1],info_swan[2]).rdv()
+        # Outlook("", su=self.objet_mail(numswan, info_swan), bd=info_swan[3]).mail()
         # self.changer_etat(self.etatvalide)
         # self.btnenrquit()
         # objet = "swan " + numswan + " " + info_swan[0] + " pour le " + info_swan[1] + "->" + info_swan[2]
@@ -507,119 +501,116 @@ class swan_FF(webdriver.Firefox):
 
 class Swan_IHM(interface_IHM):
     """  robot Swan"""
-    def __init__(self,action="json\\swan_ihm.json",repjson="json"):
-        #self.liste_action_swan = [swan.choix_1, swan.choix_2, swan.choix_3, swan.choix_4, swan.choix_5, swan.choix_6,
-        #                         swan.choix_7, swan.choix_8, swan.choix_9, swan.choix_10, swan.debug]
 
+    def __init__(self, action="json\\swan_ihm.json", repjson="json", titre=50 * " " + "ROBOT SWAN"):
+        self.liste_action_swan = [swan.choix_1, swan.choix_2, swan.choix_3, swan.choix_4, swan.choix_5, swan.choix_6,
+                                  swan.choix_7, swan.choix_8, swan.choix_9, swan.choix_10, swan.debug]
+        self.liste_tech = [tech for tech in data_dict["techs_la_poste"].keys()]
+        # print(self.liste_tech)
         self.mailtech = ""
         """ constructeur de l'IHM """
-        super().__init__(action,repjson)
+        super().__init__(action, repjson, titre)
+        self.root.bind('<<fincombox1>>', self.action_widget_combolist1)
+        self.root.bind('<<thread_fini>>', self.nettoyagelog)
 
-
-    def widget_liste_tech(self):
-        liste_tech = [tech for tech in data_dict["techs_la_poste"].keys()]
-        self.fen_choix_tech = Toplevel(self.root)
-        self.fen_choix_tech.title("choix tech")
-        self.fen_choix_tech.geometry("+900+250")
-        lab = Label(self.fen_choix_tech, text="selectionnez le tech à affecter au swan")
-        lab.pack(padx=5, pady=5)
-        self.liste_choix_tech = Listbox(self.fen_choix_tech, selectbackground="ORANGE", relief=RAISED,
-                                        activestyle="none", bd=7)
-        for index in range(len(liste_tech)):
-            self.liste_choix_tech.insert(index + 1, liste_tech[index])
-        self.liste_choix_tech.pack(fill=X, expand=YES, padx=5, pady=5)
-        Button(self.fen_choix_tech, text="OK", command=self.action2).pack()
-
-
-
-
-    def nettoyagelog(self,e):
+    def nettoyagelog(self, e):
         print("nettoyage log fin de thread")
-        print (e)
         self.sv.set("")
         self.barre1.barre.destroy()
         self.mailtech = ""
         pass
 
     def trait_fichier_lot(self):
-        pass
+        import xlrd
+        self.fich_traitlot = filedialog.askopenfilename(filetypes=[("Excel", "*.xls")],
+                                                        initialdir="C:\Applications\Robotswan\\trait_lot",
+                                                        title="fichier traitement par lot")
+        classeur = xlrd.open_workbook(self.fich_traitlot)
+        feuill1 = classeur.sheet_by_name(classeur.sheet_names()[0])  # nom feuill1
+        self.traitement_lot = TRUE
+        self.fic_trait.set(self.fich_traitlot)
+        self.entree2.update()
+        self.sv2.set("Traitement par lot en cours .....")  # affichage du traitement en cours
+        self.lab2.update()
+        barre2 = progress_bar(self.fr_log, feuill1.nrows - 1, 300)
+        barre2.barre.grid(row=3, column=0)
+        barre2.lab_pourcent.configure(bg="ORANGE", fg="blue")
+        barre2.lab_pourcent.grid(row=3, column=1)
+        for ligne_index in feuill1.col(0)[1:]:
+            self.choix = str(self.liste.get(self.liste.curselection()))
+            self.ref_saisie = ligne_index.value
+            self.ind_action = self.liste.curselection()[0]
+            self.trait_unitaire()
+            print(ligne_index.value)
+            self.t.join()
+            barre2.progression()
+        self.traitement_lot = FALSE
+        self.fic_trait.set("")
+        self.entree2.update()
+        self.sv2.set("")
+        self.lab2.update()
+        barre2.barre.destroy()
+        barre2.lab_pourcent.destroy()
+        self.liste.select_clear(0, 'end')
+
     def thread_traitement_lot(self):
-        pass
+        t2 = Thread_lot(self.root, self.trait_fichier_lot)
+        t2.start()
+
     def ouvrir_modele_traitlot(self):
-        pass
-        #subprocess.call(["C:\Program Files (x86)\Microsoft Office\Office14\EXCEL.EXE","C:\Applications\Robotswan\\trait_lot\modele_trait_lot_swan_1.xls"])
+        subprocess.call(["C:\Program Files (x86)\Microsoft Office\Office14\EXCEL.EXE",
+                         "C:\Applications\Robotswan\\trait_lot\modele_trait_lot_swan_1.xls"])
 
     def action(self):
-        if self.liste.curselection()==() : # verification action sélectionnée
+        self.ref_saisie = self.entree.get()
+        self.choix = str(self.liste.get(self.liste.curselection()))
+        print(self.choix)
+        logger(f"{self.ref_saisie}  --  {self.choix}")
+        self.ind_action = self.liste.curselection()[0]
+        if self.liste.curselection() == ():  # verification action sélectionnée
             self.sv.set("veuillez choisir une action !!! ")
-        elif self.entree.get()=="" :
+        elif self.entree.get() == "":
             self.sv.set("Veuiller saisir une réference !!!!")  # affichage msg erreur dans bandeau
-        elif self.liste.curselection()[0] == 3:  # verif choix necessitant appel widget list_tech
+        elif self.liste.curselection()[0] == 3:
+            self.sv.set(f"traitement en cours : {self.ref_saisie} -> {self.choix}")
+            self.combo1 = widget_ComboBox(self.root, self.liste_tech, 1, "choix tech", "selectionner un technicien")
+        else:
+            # realiser les actions en fonctions de l'action selectionnée
+            self.trait_unitaire()
 
-            self.widget_liste_tech()
-        else :
-            #realiser les actions en fonctions de l'action selectionnée
+    def trait_unitaire(self):
+        swan.rech(self.ref_saisie)
+        if swan.recherche_swan:
+            self.sv.set(f"traitement en cours : {self.ref_saisie} -> {self.choix}")
+            self.barre1 = progress_bar(self.fr_log, 10, 200, "yellow", "indeterminate")
+            self.barre1.barre.grid(row=1, column=0)
+            self.barre1.progression()
+            self.fr_log.update()
+            self.t = Thread(self.root, self.liste_action_swan[self.ind_action], self.ref_saisie, self.mailtech)
+            self.t.start()
+        else:
+            self.sv.set(swan.error)
+            self.lab1.update()
+            self.liste.select_clear(0, 'end')
+        if not self.traitement_lot:
+            self.liste.select_clear(0, 'end')
 
-
-            ref_saisie = self.entree.get()
-            self.choix = str(self.liste.get(self.liste.curselection()))
-            ind_action=self.liste.curselection()[0]
-
-            print(self.choix)
-            print(ind_action)
-            self.sv.set(f"traitement en cours : {ref_saisie} -> {self.choix}")
-            swan.rech(ref_saisie)
-
-            if swan.recherche_swan  :
-                #swan.log(self.sv, self.sv2)
-                self.barre1 = progress_bar(self.fr_log, 10, 200, "yellow", "indeterminate")
-                print(self.liste_action_swan[0])
-                self.barre1.barre.grid(row=1, column=0)
-                self.barre1.progression()
-                self.fr_log.update()
-                Thread(self.root, self.liste_action_swan[self.liste.curselection()[0]], ref_saisie, self.mailtech).start()
-                if not self.traitement_lot:
-                    self.liste.select_clear(0, 'end')
-            else:
-                self.sv.set(swan.error)
-                self.lab1.update()
-                self.liste.select_clear(0, 'end')
-
-    def action2(self):
-        self.mailtech = data_dict["techs_la_poste"][
-        self.liste_choix_tech.get(self.liste_choix_tech.curselection())]
-        print (self.mailtech)
-        # self.CurSel(numeroswan,self.mailtech)
-        self.fen_choix_tech.destroy()
-        flag=True
-
-
-
-            #sleep(2)
-            #self.nettoyagelog()
-            #self.sv2.set("")
-            #if self.liste.curselection()==(0,) :
-                # action 1
-            #elif self.liste.curselection()==(1,) :
-                # action 2
+    def action_widget_combolist1(self, e):
+        print(data_dict["techs_la_poste"][self.combo1.resultats])
+        self.mailtech = data_dict["techs_la_poste"][self.combo1.resultats]
+        self.combo1.fin()
+        swan.rech(self.ref_saisie)
+        self.trait_unitaire()
 
     def quitter(self):
-        #swan.quit()
+        swan.quit()
         self.root.quit()
 
 
-
-
-
-
-
-
 if __name__ == "__main__":
-
     # recuperation des données du fichier swan.json dans un dictionnaire data_dict
     with open("json\swan.json") as swan_data:
         data_dict = json.load(swan_data)
 
-    #swan=swan_FF()
-    app=Swan_IHM()
-
+    swan = swan_FF()
+    app = Swan_IHM()
