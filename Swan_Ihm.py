@@ -104,14 +104,8 @@ class swan_FF(webdriver.Firefox):
         self.ODAGONNEAU = data_dict["acteur_ODAGONNEAU"]
         self.PBRECHET = data_dict["acteur_PBRECHET"]
         self.euroinfo_acteur = data_dict["acteur_euroinfo"]
-        # self.rie_acteur = data_dict["acteur_RIE"]
-        # self.implicitly_wait(10)
         self.set_page_load_timeout(10)
         self.ouvrir("http://swan.sso.infra.ftgroup/binswan/StartPage.aspx")
-
-    def log(self, log1, log2):
-        self.log = log1
-        self.log2 = log2
 
     def get_firefox_profile(self):
         """
@@ -128,13 +122,14 @@ class swan_FF(webdriver.Firefox):
         self.get(url)
         WebDriverWait(self, 10).until(expected_conditions.new_window_is_opened)
         sleep(3)
-
         # recupere la derniere fenetre ouverte (app que l'on vient de lancer)
         app_window = self.window_handles[-1]
-
-        sleep(3)
+        print(app_window)
+        #sleep(3)
         # change de fenetre
         self.switch_to.window(app_window)
+        WebDriverWait(self, 10).until(expected_conditions.visibility_of_element_located(
+            (By.ID, "operationSearchTextBox_Textbox_operationSearchTextBox")))
         WebDriverWait(self, 10).until(expected_conditions.title_is("SWAN - Accueil"))
         # WebDriverWait(self, 10).until(expected_conditions.visibility_of_element_located((By.XPATH, "//*[@id='operationSearchButton']")))
         print(self.title)
@@ -148,21 +143,15 @@ class swan_FF(webdriver.Firefox):
 
     def wait_id(self, locator):
         try:
-            # WebDriverWait(self, 10).until(expected_conditions.visibility_of_element_located((By.ID, locator)))
-            # WebDriverWait(self, 10).until(expected_conditions.presence_of_element_located((By.ID, locator)))
-            # WebDriverWait(self, 2).until(expected_conditions.element_located_to_be_selected((By.ID, locator)))
-            # WebDriverWait(self, 5).until(expected_conditions.element_located_selection_state_to_be((By.ID, locator)))
+            WebDriverWait(self, 10).until(expected_conditions.visibility_of_element_located((By.ID, locator)))
             WebDriverWait(self, 5).until(expected_conditions.element_to_be_clickable((By.ID, locator)))
-            # sleep(1)
-        except WebDriverException:
-            logger(str(WebDriverException), "debug")
+        except WebDriverException as e:
+            logger(str(e))
 
     def click_by_XPATH(self, locator):
         try:
-            # WebDriverWait(self, 10).until(expected_conditions.visibility_of_element_located((By.XPATH, locator)))
-            # WebDriverWait(self, 10).until(expected_conditions.presence_of_element_located((By.XPATH, locator)))
+            WebDriverWait(self, 10).until(expected_conditions.visibility_of_element_located((By.XPATH, locator)))
             WebDriverWait(self, 10).until(expected_conditions.element_to_be_clickable((By.XPATH, locator)))
-            # sleep(1)
             self.find_element_by_xpath(locator).click()
         except WebDriverException as e:
             logger(str(e))
@@ -207,6 +196,7 @@ class swan_FF(webdriver.Firefox):
             self.wait_id("MainContent_btnSaveAndExit")
             WebDriverWait(self, 10).until(
                 expected_conditions.visibility_of_element_located((By.ID, "MainContent_btnSaveAndExit")))
+            WebDriverWait(self, 10).until(expected_conditions.invisibility_of_element_located((By.ID, "disablingDiv")))
             self.find_element_by_id("MainContent_btnSaveAndExit").click()
             self.wait_id("MainContent_lblFavTitle")
         except WebDriverException as e:
@@ -217,17 +207,19 @@ class swan_FF(webdriver.Firefox):
 
     def recup_info(self):
         logger("Recupération info swan")
-        self.find_element_by_xpath("//*[@title='commentaires']").click()
+        #self.find_element_by_xpath("//*[@title='commentaires']").click()
+        self.click_by_XPATH("//*[@title='commentaires']")
         raison_social = self.find_element_by_id("Title_MyBanner_lblComapnyValue").text
         date_deb = self.find_element_by_id("Title_MyBanner_lblDateDebutValue").text
         date_fin = self.find_element_by_id("Title_MyBanner_lblDateFinValue").text
         commentaires = self.find_element_by_id("ul_rptComments").text
         return raison_social, date_deb, date_fin, commentaires
 
-    def changer_etat(self, etat):
-        logger("passage état " + etat)
+    def changer_etat(self, etat, statut=""):
+        logger("passage état " + statut)
         # clic onglet description
-        self.find_element_by_xpath("//*[@title='description']").click()
+        # self.find_element_by_xpath("//*[@title='description']").click()
+        self.click_by_XPATH("//*[@title='description']")
         self.wait_id("Title_HMenu_repeater_hmenu_hyperLinkLevel1_5")
         self.find_element_by_id("Title_HMenu_repeater_hmenu_hyperLinkLevel1_5").click()
         self.wait_id("Title_HMenu_repeater_childRepeater_5_hmenu_linkButtonLevel2_3")
@@ -236,7 +228,8 @@ class swan_FF(webdriver.Firefox):
     def activation(self):
         logger("activation")
         # click menu description
-        self.find_element_by_xpath("//*[@title='description']").click()
+        # self.find_element_by_xpath("//*[@title='description']").click()
+        self.click_by_XPATH("//*[@title='description']")
         self.wait_id("Title_HMenu_repeater_childRepeater_0_hmenu_linkButtonLevel2_2")
         # click objet onglet
         self.find_element_by_id("Title_HMenu_repeater_childRepeater_0_hmenu_linkButtonLevel2_2").click()
@@ -270,8 +263,8 @@ class swan_FF(webdriver.Firefox):
     def modif_acteur(self, acteur):
         logger("modification acteur")
         # click menu description
-        self.find_element_by_xpath("//*[@title='description']").click()
-
+        #self.find_element_by_xpath("//*[@title='description']").click()
+        self.click_by_XPATH("//*[@title='description']")
         self.click_by_XPATH("//*[@title='acteurs']")
         # sleep(1)
         WebDriverWait(self, 10).until(expected_conditions.invisibility_of_element_located((By.ID, "disablingDiv")))
@@ -417,7 +410,7 @@ class swan_FF(webdriver.Firefox):
         self.commentaires(data_dict["choix_1"]["commentaires"] + " " + self.date + " ressource CP Rennes OK")
         self.activation()
         OT_bacara = self.ot_bacara()
-        self.changer_etat(self.etatvalide)
+        self.changer_etat(self.etatvalide, "validé")
         info_swan = self.recup_info()
         self.btnenrquit()
         Outlook(tech, self.mail_KLIF, self.objet_mail(numswan, info_swan) + OT_bacara,
@@ -431,7 +424,7 @@ class swan_FF(webdriver.Firefox):
         self.activation()
         self.ot_bacara()
         # validation
-        self.changer_etat(self.etatvalide)
+        self.changer_etat(self.etatvalide, "validé")
         self.btnenrquit()
 
     def choix_6(self, numswan, tech):
@@ -439,7 +432,7 @@ class swan_FF(webdriver.Firefox):
         self.btnmodif()
         self.modif_acteur(self.euroinfo_acteur)
         info_swan = self.recup_info()
-        self.changer_etat(self.etatvalide)
+        self.changer_etat(self.etatvalide, "validé")
         self.btnenrquit()
         Outlook(self.mail_EUROINFO, self.mail_KLIF, self.objet_mail(numswan, info_swan),
                 info_swan[3], info_swan[1], info_swan[2]).rdv()
@@ -459,7 +452,7 @@ class swan_FF(webdriver.Firefox):
         # Activation NFIT
         self.btnmodif()
         self.activation_NFIT()
-        self.changer_etat(self.etatvalide)
+        self.changer_etat(self.etatvalide,"validé")
         self.btnenrquit()
 
     def choix_10(self, numswan, tech):
@@ -470,7 +463,7 @@ class swan_FF(webdriver.Firefox):
         self.activation()
         self.ot_bacara()
         info_swan = self.recup_info()
-        self.changer_etat(self.etatvalide)
+        self.changer_etat(self.etatvalide,"validé")
         self.btnenrquit()
         Outlook(data_dict["SITA"]["mail"], self.mail_KLIF,
                 "test MCS site WS-ARUN-TOWN1 / RUNDD / CD043B9FF4", data_dict["SITA"]["texte"],
@@ -485,14 +478,14 @@ class swan_FF(webdriver.Firefox):
         # rdv(dest=data_dict["SITA"]["mail"], dest_op=self.mail_KLIF, sujet="test MCS site WS-ARUN-TOWN1 / RUNDD / CD043B9FF4", corps=data_dict["SITA"]["texte"], date_deb=info_swan[1], date_fin=info_swan[2])
         # self.reaffecter_EDS("ATQCHR")
         # self.commentaires("OD")
-        # self.changer_etat(self.etatvalide)
+        # self.changer_etat(self.etatvalide,"validé")
         # self.modif_acteur(data_dict["choix_1"]["acteur_choix_1"])
         # self.btnenrquit()
         # info_swan = self.recup_info()
         # ot_bacara = self.ot_bacara()
         # Outlook(tech, self.mail_KLIF, self.objet_mail(numswan, info_swan) + "ot_bacara", info_swan[3], info_swan[1],info_swan[2]).rdv()
         # Outlook("", su=self.objet_mail(numswan, info_swan), bd=info_swan[3]).mail()
-        # self.changer_etat(self.etatvalide)
+        # self.changer_etat(self.etatvalide,"validé")
         # self.btnenrquit()
         # objet = "swan " + numswan + " " + info_swan[0] + " pour le " + info_swan[1] + "->" + info_swan[2]
         # rdv("", self.mail_KLIF, objet, info_swan[3], info_swan[1], info_swan[2])
